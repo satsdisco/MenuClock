@@ -28,5 +28,11 @@ struct MenuClockApp: App {
                 .environmentObject(calendarManager)
         }
         .windowResizability(.contentSize)
+
+        Window("Meeting Planner", id: "meeting-planner") {
+            MeetingPlannerView()
+                .environmentObject(settings)
+        }
+        .windowResizability(.contentSize)
     }
 }

@@ -84,7 +84,16 @@ struct DropdownView: View {
     }
 
     private var footer: some View {
-        HStack {
+        HStack(spacing: 12) {
+            Button {
+                openWindow(id: "meeting-planner")
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Label("Meeting Planner", systemImage: "person.2.wave.2")
+                    .font(.caption)
+            }
+            .buttonStyle(.borderless)
+
             Button {
                 openWindow(id: "settings")
                 NSApp.activate(ignoringOtherApps: true)

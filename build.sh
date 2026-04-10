@@ -38,7 +38,8 @@ swiftc \
   MenuClock/Views/SettingsView.swift \
   MenuClock/Views/TimeZonePickerView.swift \
   MenuClock/Views/OnboardingView.swift \
-  MenuClock/Views/AboutView.swift
+  MenuClock/Views/AboutView.swift \
+  MenuClock/Views/MeetingPlannerView.swift
 
 echo "→ Assembling .app bundle…"
 rm -rf "$APP"
