@@ -31,5 +31,7 @@ Icon
 # Secrets
 *.p12
 *.cer
+*.pem
+*.key
 *.mobileprovision
 ExportOptions.plist
