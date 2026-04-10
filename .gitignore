@@ -1,0 +1,35 @@
+# Build artifacts
+build/MenuClock
+build/MenuClock.app
+build/AppIcon.iconset
+build/AppIcon.icns
+*.dSYM
+*.swiftmodule
+*.swiftdoc
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+DerivedData/
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Secrets
+*.p12
+*.cer
+*.mobileprovision
+ExportOptions.plist
