@@ -75,12 +75,56 @@ struct DropdownView: View {
             emptyState("No upcoming events", systemImage: "calendar")
         } else {
             VStack(spacing: 2) {
+                nextEventCountdown
                 ForEach(calendarManager.upcomingEvents, id: \.eventIdentifier) { event in
-                    EventRow(event: event)
+                    EventRow(event: event, now: ticker.now)
                 }
             }
             .padding(.horizontal, 12)
         }
+    }
+
+    /// Live countdown to (or status of) the next event.
+    @ViewBuilder
+    private var nextEventCountdown: some View {
+        if let next = calendarManager.upcomingEvents.first {
+            let now = ticker.now
+            let isOngoing = next.startDate <= now && next.endDate > now
+
+            HStack(spacing: 6) {
+                Image(systemName: isOngoing ? "record.circle" : "clock.arrow.circlepath")
+                    .font(.system(size: 10))
+                    .foregroundStyle(isOngoing ? .red : .orange)
+                if isOngoing {
+                    Text("\(next.title ?? "Event") · ends \(relativeTime(until: next.endDate, from: now))")
+                        .font(.system(size: 11, weight: .medium))
+                } else {
+                    Text("\(next.title ?? "Event") · \(relativeTime(until: next.startDate, from: now))")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                Spacer()
+            }
+            .lineLimit(1)
+            .padding(.vertical, 5)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(isOngoing ? Color.red.opacity(0.1) : Color.orange.opacity(0.08))
+            )
+            .padding(.bottom, 4)
+        }
+    }
+
+    private func relativeTime(until target: Date, from now: Date) -> String {
+        let seconds = Int(target.timeIntervalSince(now))
+        if seconds < 0 { return "now" }
+        if seconds < 60 { return "in <1m" }
+        let minutes = seconds / 60
+        if minutes < 60 { return "in \(minutes)m" }
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if mins == 0 { return "in \(hours)h" }
+        return "in \(hours)h \(mins)m"
     }
 
     private var footer: some View {

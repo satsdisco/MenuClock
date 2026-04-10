@@ -92,6 +92,18 @@ struct SettingsView: View {
                 .labelsHidden()
                 .frame(maxWidth: 260)
             }
+
+            HStack {
+                Text("Show date:")
+                    .font(.callout)
+                Picker("", selection: $settings.menuBarDateStyle) {
+                    ForEach(MenuBarDateStyle.allCases) { style in
+                        Text(style.displayName).tag(style)
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: 260)
+            }
         }
     }
 

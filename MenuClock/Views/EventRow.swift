@@ -4,14 +4,22 @@ import AppKit
 
 struct EventRow: View {
     let event: EKEvent
+    let now: Date
     @State private var isHovering = false
 
+    private var meetingLink: MeetingLinkDetector.MeetingLink? {
+        MeetingLinkDetector.detect(in: event)
+    }
+
+    private var isOngoing: Bool {
+        event.startDate <= now && event.endDate > now
+    }
+
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .center, spacing: 8) {
             Circle()
                 .fill(Color(nsColor: event.calendar.color))
                 .frame(width: 8, height: 8)
-                .padding(.top, 5)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(event.title ?? "Untitled")
@@ -23,30 +31,71 @@ struct EventRow: View {
             }
 
             Spacer(minLength: 8)
+
+            if let link = meetingLink {
+                Button {
+                    NSWorkspace.shared.open(link.url)
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: link.provider.sfSymbol)
+                            .font(.system(size: 9))
+                        Text("Join")
+                            .font(.system(size: 10, weight: .semibold))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(isOngoing ? Color.green : Color.accentColor)
+                    )
+                    .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+                .help("Join \(link.provider.rawValue)")
+            }
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 6)
         .background(
             RoundedRectangle(cornerRadius: 4)
-                .fill(isHovering ? Color.secondary.opacity(0.15) : Color.clear)
+                .fill(isHovering ? Color.secondary.opacity(0.12) : Color.clear)
         )
         .contentShape(Rectangle())
         .onHover { hovering in
             isHovering = hovering
-            if hovering {
-                NSCursor.pointingHand.push()
-            } else {
-                NSCursor.pop()
-            }
+            if hovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
         }
         .onTapGesture {
             openInCalendarApp()
         }
     }
 
-    /// Try to open Calendar.app at this specific event. The undocumented but
-    /// long-standing scheme `ical://ekevent/<calendarItemIdentifier>` works for
-    /// local events. Falls back to opening Calendar.app generically.
+    private var timeString: String {
+        let cal = Calendar.current
+        let time = TimeFormatting.timeString(for: event.startDate, in: .current)
+
+        if isOngoing {
+            let remaining = event.endDate.timeIntervalSince(now)
+            let mins = Int(remaining / 60)
+            if mins < 60 {
+                return "Now · ends in \(mins)m"
+            }
+            let h = mins / 60
+            let m = mins % 60
+            return "Now · ends in \(h)h \(m)m"
+        } else if cal.isDateInToday(event.startDate) {
+            return "Today · \(time)"
+        } else if cal.isDateInTomorrow(event.startDate) {
+            return "Tomorrow · \(time)"
+        } else {
+            let df = DateFormatter()
+            df.locale = .current
+            df.timeZone = .current
+            df.setLocalizedDateFormatFromTemplate("EEEMMMd")
+            return "\(df.string(from: event.startDate)) · \(time)"
+        }
+    }
+
     private func openInCalendarApp() {
         let id = event.calendarItemIdentifier
         if !id.isEmpty,
@@ -56,24 +105,6 @@ struct EventRow: View {
         }
         if let fallback = URL(string: "ical://") {
             NSWorkspace.shared.open(fallback)
-        }
-    }
-
-    private var timeString: String {
-        let cal = Calendar.current
-        let time = TimeFormatting.timeString(for: event.startDate, in: .current)
-
-        if cal.isDateInToday(event.startDate) {
-            return "Today · \(time)"
-        } else if cal.isDateInTomorrow(event.startDate) {
-            return "Tomorrow · \(time)"
-        } else {
-            // Include weekday + month/day alongside the styled time.
-            let df = DateFormatter()
-            df.locale = .current
-            df.timeZone = .current
-            df.setLocalizedDateFormatFromTemplate("EEEMMMd")
-            return "\(df.string(from: event.startDate)) · \(time)"
         }
     }
 }

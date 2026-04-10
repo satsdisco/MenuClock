@@ -40,6 +40,10 @@ final class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(showPrimaryLabel, forKey: Keys.showPrimaryLabel) }
     }
 
+    @Published var menuBarDateStyle: MenuBarDateStyle {
+        didSet { UserDefaults.standard.set(menuBarDateStyle.rawValue, forKey: Keys.menuBarDateStyle) }
+    }
+
     @Published var menuBarSeparator: MenuBarSeparator {
         didSet { UserDefaults.standard.set(menuBarSeparator.rawValue, forKey: Keys.menuBarSeparator) }
     }
@@ -91,6 +95,7 @@ final class SettingsManager: ObservableObject {
         static let weatherEnabled = "weatherEnabled"
         static let temperatureUnit = "temperatureUnit"
         static let showPrimaryLabel = "showPrimaryLabel"
+        static let menuBarDateStyle = "menuBarDateStyle"
         static let menuBarSeparator = "menuBarSeparator"
         static let timeFormat = "timeFormat"
         static let enabledCalendarIDs = "enabledCalendarIDs"
@@ -140,6 +145,13 @@ final class SettingsManager: ObservableObject {
             self.showPrimaryLabel = defaults.bool(forKey: Keys.showPrimaryLabel)
         } else {
             self.showPrimaryLabel = true
+        }
+
+        if let raw = defaults.string(forKey: Keys.menuBarDateStyle),
+           let style = MenuBarDateStyle(rawValue: raw) {
+            self.menuBarDateStyle = style
+        } else {
+            self.menuBarDateStyle = .hidden
         }
 
         if let raw = defaults.string(forKey: Keys.menuBarSeparator),

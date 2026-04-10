@@ -53,18 +53,28 @@ final class MenuBarViewModel: ObservableObject {
             .sink { _ in recompute() }
             .store(in: &cancellables)
 
+        settings.$menuBarDateStyle
+            .receive(on: RunLoop.main)
+            .sink { _ in recompute() }
+            .store(in: &cancellables)
+
         recompute()
     }
 
     static func compute(now: Date, settings: SettingsManager) -> String {
         let style = settings.timeFormat
+        var result: String
+
         switch settings.menuBarMode {
         case .primaryOnly:
-            return TimeFormatting.timeString(for: now, in: .current, style: style)
+            result = TimeFormatting.timeString(for: now, in: .current, style: style)
 
         case .primaryPlusSecondary:
             let primaryTime = TimeFormatting.timeString(for: now, in: .current, style: style)
-            guard let secondary = settings.secondaryClock else { return primaryTime }
+            guard let secondary = settings.secondaryClock else {
+                result = primaryTime
+                break
+            }
 
             let secondaryTZ = TimeZone(identifier: secondary.timeZoneIdentifier) ?? .current
             let secondaryTime = TimeFormatting.timeString(for: now, in: secondaryTZ, style: style)
@@ -85,8 +95,19 @@ final class MenuBarViewModel: ObservableObject {
             // Stitch with the chosen separator. Space-only gets extra padding.
             let rawSep = settings.menuBarSeparator.rawValue
             let separator = settings.menuBarSeparator == .space ? "  " : " \(rawSep) "
-            return primaryPart + separator + secondaryPart
+            result = primaryPart + separator + secondaryPart
         }
+
+        // Prepend date if enabled
+        if let template = settings.menuBarDateStyle.dateTemplate {
+            let df = DateFormatter()
+            df.locale = .current
+            df.timeZone = .current
+            df.setLocalizedDateFormatFromTemplate(template)
+            result = df.string(from: now) + "  " + result
+        }
+
+        return result
     }
 
 

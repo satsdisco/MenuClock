@@ -40,6 +40,33 @@ enum TimeFormatStyle: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum MenuBarDateStyle: String, Codable, CaseIterable, Identifiable {
+    case hidden          // no date
+    case short           // "Thu"
+    case medium          // "Thu Apr 10"
+    case full            // "Thursday, April 10"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .hidden: return "Hidden"
+        case .short:  return "Day only (Thu)"
+        case .medium: return "Day + date (Thu Apr 10)"
+        case .full:   return "Full (Thursday, April 10)"
+        }
+    }
+
+    var dateTemplate: String? {
+        switch self {
+        case .hidden: return nil
+        case .short:  return "EEE"
+        case .medium: return "EEEMMMd"
+        case .full:   return "EEEEMMMMd"
+        }
+    }
+}
+
 enum MenuBarSeparator: String, Codable, CaseIterable, Identifiable {
     case bullet     = "•"
     case middleDot  = "·"

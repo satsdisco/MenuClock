@@ -30,6 +30,7 @@ swiftc \
   MenuClock/Managers/WeatherManager.swift \
   MenuClock/Managers/TimeFormatting.swift \
   MenuClock/Managers/LaunchAtLoginManager.swift \
+  MenuClock/Managers/MeetingLinkDetector.swift \
   MenuClock/ViewModels/MenuBarViewModel.swift \
   MenuClock/Views/MenuBarTitleView.swift \
   MenuClock/Views/DropdownView.swift \

@@ -26,7 +26,7 @@ final class ClockTicker: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self else { return }
             self.now = Date()
-            let t = Timer(timeInterval: 60, repeats: true) { [weak self] _ in
+            let t = Timer(timeInterval: 30, repeats: true) { [weak self] _ in
                 self?.now = Date()
             }
             self.timer = t
