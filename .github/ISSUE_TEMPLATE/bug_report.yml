@@ -1,0 +1,67 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the details below so we can reproduce and fix it.
+
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS Version
+      description: "e.g. macOS 14.2 Sonoma"
+      placeholder: "macOS XX.X"
+    validations:
+      required: true
+
+  - type: input
+    id: menuclock-version
+    attributes:
+      label: MenuClock Version
+      description: "Found in Settings → About (ℹ button)"
+      placeholder: "1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: chip
+    attributes:
+      label: Mac Chip
+      description: "Apple Silicon (M1/M2/M3/M4) or Intel"
+      placeholder: "Apple M2"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly. What did you expect to happen?
+      placeholder: "When I click Settings, nothing opens..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Step-by-step instructions to trigger the bug
+      placeholder: |
+        1. Open MenuClock dropdown
+        2. Click Settings
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console logs (optional)
+      description: "Open Console.app, filter by 'MenuClock', reproduce the bug, paste any relevant log lines"
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (optional)
+      description: Drag and drop any relevant screenshots here

@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for MenuClock? We'd love to hear it.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+      description: Describe the feature or improvement clearly
+      placeholder: "It would be great if MenuClock could..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why?
+      description: What problem does this solve? How would you use it?
+      placeholder: "I need this because..."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried other approaches or workarounds?
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Mockups or references (optional)
+      description: Drag and drop mockups, or link to apps that do something similar
