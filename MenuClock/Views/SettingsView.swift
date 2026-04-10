@@ -50,6 +50,16 @@ struct SettingsView: View {
             Text("MenuClock")
                 .font(.headline)
             Spacer()
+            Button {
+                if let delegate = NSApp.delegate as? AppDelegate {
+                    delegate.showAbout()
+                }
+            } label: {
+                Label("About", systemImage: "info.circle")
+                    .labelStyle(.iconOnly)
+            }
+            .buttonStyle(.borderless)
+            .help("About MenuClock")
         }
         .padding(16)
     }

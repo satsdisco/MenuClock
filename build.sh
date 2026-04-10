@@ -20,6 +20,7 @@ swiftc \
   -O \
   -o "$BIN" \
   MenuClock/MenuClockApp.swift \
+  MenuClock/AppDelegate.swift \
   MenuClock/Models/WorldClock.swift \
   MenuClock/Models/AppSettings.swift \
   MenuClock/Managers/SettingsManager.swift \
@@ -35,7 +36,9 @@ swiftc \
   MenuClock/Views/WorldClockRow.swift \
   MenuClock/Views/EventRow.swift \
   MenuClock/Views/SettingsView.swift \
-  MenuClock/Views/TimeZonePickerView.swift
+  MenuClock/Views/TimeZonePickerView.swift \
+  MenuClock/Views/OnboardingView.swift \
+  MenuClock/Views/AboutView.swift
 
 echo "→ Assembling .app bundle…"
 rm -rf "$APP"

@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct MenuClockApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var settings = SettingsManager.shared
     @StateObject private var ticker = ClockTicker.shared
     @StateObject private var calendarManager = CalendarManager.shared

@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (.app, ad-hoc signed)
+    runs-on: macos-14
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcode-select -p
+          echo "SDK: $(xcrun --show-sdk-path)"
+          echo "SDK version: $(xcrun --show-sdk-version)"
+          swift --version
+
+      - name: Verify city database is committed
+        run: |
+          test -s MenuClock/Resources/cities.tsv \
+            || (echo "::error::cities.tsv missing — run build/fetch_cities.sh and commit" && exit 1)
+          wc -l MenuClock/Resources/cities.tsv
+
+      - name: Build
+        run: ./build.sh
+
+      - name: Verify bundle
+        run: |
+          test -d build/MenuClock.app
+          test -x build/MenuClock.app/Contents/MacOS/MenuClock
+          test -f build/MenuClock.app/Contents/Info.plist
+          test -f build/MenuClock.app/Contents/Resources/cities.tsv
+          test -f build/MenuClock.app/Contents/Resources/AppIcon.icns
+          codesign --verify --verbose build/MenuClock.app
+          plutil -lint build/MenuClock.app/Contents/Info.plist
+
+      - name: Show bundle contents
+        run: |
+          ls -la build/MenuClock.app/Contents/
+          ls -la build/MenuClock.app/Contents/MacOS/
+          ls -la build/MenuClock.app/Contents/Resources/
+          du -sh build/MenuClock.app
+
+      - name: Zip artifact
+        run: |
+          cd build
+          /usr/bin/ditto -c -k --keepParent MenuClock.app MenuClock.app.zip
+          ls -la MenuClock.app.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MenuClock-${{ github.sha }}
+          path: build/MenuClock.app.zip
+          retention-days: 14
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            build/MenuClock.app.zip --clobber

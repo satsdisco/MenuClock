@@ -56,6 +56,10 @@ final class SettingsManager: ObservableObject {
         }
     }
 
+    @Published var hasCompletedOnboarding: Bool {
+        didSet { UserDefaults.standard.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
+    }
+
     var secondaryClock: WorldClock? {
         if let id = secondaryClockID,
            let match = worldClocks.first(where: { $0.id == id }) {
@@ -90,6 +94,7 @@ final class SettingsManager: ObservableObject {
         static let menuBarSeparator = "menuBarSeparator"
         static let timeFormat = "timeFormat"
         static let enabledCalendarIDs = "enabledCalendarIDs"
+        static let hasCompletedOnboarding = "hasCompletedOnboarding"
     }
 
     private init() {
@@ -156,6 +161,8 @@ final class SettingsManager: ObservableObject {
         } else {
             self.enabledCalendarIdentifiers = []
         }
+
+        self.hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
     }
 
     // MARK: - Mutations
