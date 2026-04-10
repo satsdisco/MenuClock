@@ -44,6 +44,14 @@ final class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(menuBarDateStyle.rawValue, forKey: Keys.menuBarDateStyle) }
     }
 
+    @Published var menuBarClockOrder: MenuBarClockOrder {
+        didSet { UserDefaults.standard.set(menuBarClockOrder.rawValue, forKey: Keys.menuBarClockOrder) }
+    }
+
+    @Published var menuBarDatePosition: MenuBarDatePosition {
+        didSet { UserDefaults.standard.set(menuBarDatePosition.rawValue, forKey: Keys.menuBarDatePosition) }
+    }
+
     @Published var menuBarSeparator: MenuBarSeparator {
         didSet { UserDefaults.standard.set(menuBarSeparator.rawValue, forKey: Keys.menuBarSeparator) }
     }
@@ -96,6 +104,8 @@ final class SettingsManager: ObservableObject {
         static let temperatureUnit = "temperatureUnit"
         static let showPrimaryLabel = "showPrimaryLabel"
         static let menuBarDateStyle = "menuBarDateStyle"
+        static let menuBarClockOrder = "menuBarClockOrder"
+        static let menuBarDatePosition = "menuBarDatePosition"
         static let menuBarSeparator = "menuBarSeparator"
         static let timeFormat = "timeFormat"
         static let enabledCalendarIDs = "enabledCalendarIDs"
@@ -152,6 +162,20 @@ final class SettingsManager: ObservableObject {
             self.menuBarDateStyle = style
         } else {
             self.menuBarDateStyle = .hidden
+        }
+
+        if let raw = defaults.string(forKey: Keys.menuBarClockOrder),
+           let order = MenuBarClockOrder(rawValue: raw) {
+            self.menuBarClockOrder = order
+        } else {
+            self.menuBarClockOrder = .localFirst
+        }
+
+        if let raw = defaults.string(forKey: Keys.menuBarDatePosition),
+           let pos = MenuBarDatePosition(rawValue: raw) {
+            self.menuBarDatePosition = pos
+        } else {
+            self.menuBarDatePosition = .leading
         }
 
         if let raw = defaults.string(forKey: Keys.menuBarSeparator),

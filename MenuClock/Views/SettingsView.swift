@@ -230,8 +230,34 @@ struct SettingsView: View {
                             .frame(maxWidth: 240)
                         }
 
+                        HStack {
+                            Text("Clock order:")
+                                .font(.callout)
+                            Picker("", selection: $settings.menuBarClockOrder) {
+                                ForEach(MenuBarClockOrder.allCases) { order in
+                                    Text(order.displayName).tag(order)
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(maxWidth: 240)
+                        }
+
                         Toggle("Show local time zone label", isOn: $settings.showPrimaryLabel)
                             .font(.callout)
+
+                        if settings.menuBarDateStyle != .hidden {
+                            HStack {
+                                Text("Date position:")
+                                    .font(.callout)
+                                Picker("", selection: $settings.menuBarDatePosition) {
+                                    ForEach(MenuBarDatePosition.allCases) { pos in
+                                        Text(pos.displayName).tag(pos)
+                                    }
+                                }
+                                .labelsHidden()
+                                .frame(maxWidth: 240)
+                            }
+                        }
 
                         menuBarPreview
                     }

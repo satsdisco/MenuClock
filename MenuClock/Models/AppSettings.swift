@@ -67,6 +67,32 @@ enum MenuBarDateStyle: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum MenuBarClockOrder: String, Codable, CaseIterable, Identifiable {
+    case localFirst
+    case secondaryFirst
+
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .localFirst:     return "Local · Secondary"
+        case .secondaryFirst: return "Secondary · Local"
+        }
+    }
+}
+
+enum MenuBarDatePosition: String, Codable, CaseIterable, Identifiable {
+    case leading
+    case trailing
+
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .leading:  return "Before clocks"
+        case .trailing: return "After clocks"
+        }
+    }
+}
+
 enum MenuBarSeparator: String, Codable, CaseIterable, Identifiable {
     case bullet     = "•"
     case middleDot  = "·"

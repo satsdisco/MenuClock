@@ -58,28 +58,38 @@ final class MenuBarViewModel: ObservableObject {
             .sink { _ in recompute() }
             .store(in: &cancellables)
 
+        settings.$menuBarClockOrder
+            .receive(on: RunLoop.main)
+            .sink { _ in recompute() }
+            .store(in: &cancellables)
+
+        settings.$menuBarDatePosition
+            .receive(on: RunLoop.main)
+            .sink { _ in recompute() }
+            .store(in: &cancellables)
+
         recompute()
     }
 
     static func compute(now: Date, settings: SettingsManager) -> String {
         let style = settings.timeFormat
-        var result: String
 
+        // Build the clock portion(s)
+        let clockString: String
         switch settings.menuBarMode {
         case .primaryOnly:
-            result = TimeFormatting.timeString(for: now, in: .current, style: style)
+            clockString = TimeFormatting.timeString(for: now, in: .current, style: style)
 
         case .primaryPlusSecondary:
             let primaryTime = TimeFormatting.timeString(for: now, in: .current, style: style)
             guard let secondary = settings.secondaryClock else {
-                result = primaryTime
+                clockString = primaryTime
                 break
             }
 
             let secondaryTZ = TimeZone(identifier: secondary.timeZoneIdentifier) ?? .current
             let secondaryTime = TimeFormatting.timeString(for: now, in: secondaryTZ, style: style)
 
-            // Primary part — optionally prefixed with local city code
             let primaryPart: String
             if settings.showPrimaryLabel {
                 primaryPart = "\(shortCode(forTimeZone: .current)) \(primaryTime)"
@@ -87,27 +97,37 @@ final class MenuBarViewModel: ObservableObject {
                 primaryPart = primaryTime
             }
 
-            // Secondary part — always labeled with a short code
             let secondaryCode = shortCode(fromLabel: secondary.label)
                 ?? shortCode(forTimeZone: secondaryTZ)
             let secondaryPart = "\(secondaryCode) \(secondaryTime)"
 
-            // Stitch with the chosen separator. Space-only gets extra padding.
             let rawSep = settings.menuBarSeparator.rawValue
             let separator = settings.menuBarSeparator == .space ? "  " : " \(rawSep) "
-            result = primaryPart + separator + secondaryPart
+
+            // Order the two clocks
+            switch settings.menuBarClockOrder {
+            case .localFirst:
+                clockString = primaryPart + separator + secondaryPart
+            case .secondaryFirst:
+                clockString = secondaryPart + separator + primaryPart
+            }
         }
 
-        // Prepend date if enabled
-        if let template = settings.menuBarDateStyle.dateTemplate {
-            let df = DateFormatter()
-            df.locale = .current
-            df.timeZone = .current
-            df.setLocalizedDateFormatFromTemplate(template)
-            result = df.string(from: now) + "  " + result
+        // Build the date string (if any)
+        guard let template = settings.menuBarDateStyle.dateTemplate else {
+            return clockString
         }
+        let df = DateFormatter()
+        df.locale = .current
+        df.timeZone = .current
+        df.setLocalizedDateFormatFromTemplate(template)
+        let dateString = df.string(from: now)
 
-        return result
+        // Place date before or after clocks
+        switch settings.menuBarDatePosition {
+        case .leading:  return dateString + "  " + clockString
+        case .trailing: return clockString + "  " + dateString
+        }
     }
 
 
