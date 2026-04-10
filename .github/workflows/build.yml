@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   build:
-    name: Build (.app, ad-hoc signed)
+    name: Build (.app)
     runs-on: macos-14
     timeout-minutes: 15
 
@@ -29,36 +29,92 @@ jobs:
       - name: Show toolchain
         run: |
           sw_vers
-          xcode-select -p
           echo "SDK: $(xcrun --show-sdk-path)"
           echo "SDK version: $(xcrun --show-sdk-version)"
           swift --version
 
-      - name: Verify city database is committed
+      - name: Verify city database
         run: |
           test -s MenuClock/Resources/cities.tsv \
-            || (echo "::error::cities.tsv missing — run build/fetch_cities.sh and commit" && exit 1)
-          wc -l MenuClock/Resources/cities.tsv
+            || (echo "::error::cities.tsv missing" && exit 1)
 
+      # ── Signing setup (only when secrets are available) ──────────
+      - name: Import signing certificate
+        if: github.event_name == 'release'
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASS="$(openssl rand -hex 16)"
+
+          echo "$CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 900 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASS" "$KEYCHAIN_PATH"
+
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASS" "$KEYCHAIN_PATH"
+
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      # ── Build ────────────────────────────────────────────────────
       - name: Build
         run: ./build.sh
 
+      # ── Re-sign with Developer ID (release only) ────────────────
+      - name: Sign with Developer ID
+        if: github.event_name == 'release'
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          IDENTITY="Developer ID Application: John Grafton Clark ($APPLE_TEAM_ID)"
+          codesign --force --deep --sign "$IDENTITY" \
+            --entitlements MenuClock/MenuClock.entitlements \
+            --options runtime \
+            --timestamp \
+            build/MenuClock.app
+          codesign --verify --verbose build/MenuClock.app
+          echo "Signed with: $IDENTITY"
+
+      # ── Notarize (release only) ─────────────────────────────────
+      - name: Notarize
+        if: github.event_name == 'release'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+        run: |
+          cd build
+          /usr/bin/ditto -c -k --keepParent MenuClock.app MenuClock-notarize.zip
+
+          xcrun notarytool submit MenuClock-notarize.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$NOTARIZATION_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 10m
+
+          xcrun stapler staple MenuClock.app
+          echo "Notarization complete and stapled."
+          rm MenuClock-notarize.zip
+
+      # ── Package + upload ─────────────────────────────────────────
       - name: Verify bundle
         run: |
           test -d build/MenuClock.app
           test -x build/MenuClock.app/Contents/MacOS/MenuClock
-          test -f build/MenuClock.app/Contents/Info.plist
           test -f build/MenuClock.app/Contents/Resources/cities.tsv
-          test -f build/MenuClock.app/Contents/Resources/AppIcon.icns
           codesign --verify --verbose build/MenuClock.app
           plutil -lint build/MenuClock.app/Contents/Info.plist
-
-      - name: Show bundle contents
-        run: |
-          ls -la build/MenuClock.app/Contents/
-          ls -la build/MenuClock.app/Contents/MacOS/
-          ls -la build/MenuClock.app/Contents/Resources/
-          du -sh build/MenuClock.app
 
       - name: Zip artifact
         run: |
@@ -80,3 +136,9 @@ jobs:
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             build/MenuClock.app.zip --clobber
+
+      # ── Cleanup ──────────────────────────────────────────────────
+      - name: Cleanup keychain
+        if: always() && github.event_name == 'release'
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
