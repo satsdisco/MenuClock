@@ -6,6 +6,35 @@ struct WorldClockRow: View {
     let weather: WeatherSnapshot?
     var isLocal: Bool = false
 
+    private var remoteHour: Int {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = clock.timeZone
+        return cal.component(.hour, from: now)
+    }
+
+    /// Daytime = 7 AM to 9 PM (generous), everything else is night.
+    private var isDaytime: Bool {
+        (7..<21).contains(remoteHour)
+    }
+
+    private var dayNightSymbol: String {
+        switch remoteHour {
+        case 6..<8:   return "sunrise.fill"
+        case 8..<18:  return "sun.max.fill"
+        case 18..<21: return "sunset.fill"
+        default:      return "moon.fill"
+        }
+    }
+
+    private var dayNightColor: Color {
+        switch remoteHour {
+        case 6..<8:   return .orange
+        case 8..<18:  return .yellow
+        case 18..<21: return .orange
+        default:      return .indigo
+        }
+    }
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
@@ -19,9 +48,14 @@ struct WorldClockRow: View {
                         .font(.system(size: 13, weight: .medium))
                         .lineLimit(1)
                 }
-                Text(isLocal ? "Local" : dayLabel)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: dayNightSymbol)
+                        .font(.system(size: 8))
+                        .foregroundStyle(dayNightColor)
+                    Text(isLocal ? "Local" : dayLabel)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer(minLength: 8)
@@ -41,6 +75,7 @@ struct WorldClockRow: View {
             Text(timeString)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(isDaytime ? .primary : .secondary)
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 4)
