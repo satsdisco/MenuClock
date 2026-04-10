@@ -22,12 +22,12 @@ final class CalendarManager: ObservableObject {
             forName: .EKEventStoreChanged,
             object: store,
             queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in await self?.refresh() }
+        ) { _ in
+            Task { @MainActor in await CalendarManager.shared.refresh() }
         }
 
-        let t = Timer(timeInterval: 300, repeats: true) { [weak self] _ in
-            Task { @MainActor in await self?.refresh() }
+        let t = Timer(timeInterval: 300, repeats: true) { _ in
+            Task { @MainActor in await CalendarManager.shared.refresh() }
         }
         refreshTimer = t
         RunLoop.main.add(t, forMode: .common)

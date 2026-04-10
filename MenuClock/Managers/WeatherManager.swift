@@ -81,8 +81,9 @@ final class WeatherManager: ObservableObject {
     private var inFlight: Set<UUID> = []
 
     private init() {
-        let t = Timer(timeInterval: cacheLifetime, repeats: true) { [weak self] _ in
-            Task { @MainActor in await self?.refreshAll() }
+        let interval = cacheLifetime
+        let t = Timer(timeInterval: interval, repeats: true) { _ in
+            Task { @MainActor in await WeatherManager.shared.refreshAll() }
         }
         refreshTimer = t
         RunLoop.main.add(t, forMode: .common)
