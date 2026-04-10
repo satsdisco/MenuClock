@@ -24,7 +24,7 @@ struct DropdownView: View {
             footer
         }
         .padding(.vertical, 12)
-        .frame(width: 320)
+        .frame(width: 350)
         .task {
             await calendarManager.refresh()
             if settings.weatherEnabled {
@@ -95,16 +95,21 @@ struct DropdownView: View {
                 Image(systemName: isOngoing ? "record.circle" : "clock.arrow.circlepath")
                     .font(.system(size: 10))
                     .foregroundStyle(isOngoing ? .red : .orange)
-                if isOngoing {
-                    Text("\(next.title ?? "Event") · ends \(relativeTime(until: next.endDate, from: now))")
-                        .font(.system(size: 11, weight: .medium))
-                } else {
-                    Text("\(next.title ?? "Event") · \(relativeTime(until: next.startDate, from: now))")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                Spacer()
+
+                Text(next.title ?? "Event")
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                Spacer(minLength: 4)
+
+                Text(isOngoing
+                     ? "ends \(relativeTime(until: next.endDate, from: now))"
+                     : relativeTime(until: next.startDate, from: now))
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isOngoing ? .red : .orange)
+                    .fixedSize()
             }
-            .lineLimit(1)
             .padding(.vertical, 5)
             .padding(.horizontal, 8)
             .background(
