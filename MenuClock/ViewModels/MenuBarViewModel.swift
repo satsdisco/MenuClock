@@ -73,12 +73,25 @@ final class MenuBarViewModel: ObservableObject {
 
     static func compute(now: Date, settings: SettingsManager) -> String {
         let style = settings.timeFormat
+        var dateTimeZone = TimeZone.current
 
         // Build the clock portion(s)
         let clockString: String
         switch settings.menuBarMode {
         case .primaryOnly:
             clockString = TimeFormatting.timeString(for: now, in: .current, style: style)
+
+        case .secondaryOnly:
+            guard let secondary = settings.secondaryClock else {
+                clockString = TimeFormatting.timeString(for: now, in: .current, style: style)
+                break
+            }
+            let secondaryTZ = secondary.timeZone
+            let secondaryTime = TimeFormatting.timeString(for: now, in: secondaryTZ, style: style)
+            let secondaryCode = shortCode(fromLabel: secondary.label)
+                ?? shortCode(forTimeZone: secondaryTZ)
+            clockString = "\(secondaryCode) \(secondaryTime)"
+            dateTimeZone = secondaryTZ
 
         case .primaryPlusSecondary:
             let primaryTime = TimeFormatting.timeString(for: now, in: .current, style: style)
@@ -119,7 +132,7 @@ final class MenuBarViewModel: ObservableObject {
         }
         let df = DateFormatter()
         df.locale = .current
-        df.timeZone = .current
+        df.timeZone = dateTimeZone
         df.setLocalizedDateFormatFromTemplate(template)
         let dateString = df.string(from: now)
 

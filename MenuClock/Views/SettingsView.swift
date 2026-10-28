@@ -199,9 +199,9 @@ struct SettingsView: View {
             .pickerStyle(.radioGroup)
             .labelsHidden()
 
-            if settings.menuBarMode == .primaryPlusSecondary {
+            if settings.menuBarMode != .primaryOnly {
                 if settings.worldClocks.isEmpty {
-                    Text("Add a world clock below to pick a secondary clock.")
+                    Text("Add a world clock below to pick a secondary clock. Local time is shown until then.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -218,32 +218,34 @@ struct SettingsView: View {
                             .frame(maxWidth: 240)
                         }
 
-                        HStack {
-                            Text("Separator:")
-                                .font(.callout)
-                            Picker("", selection: $settings.menuBarSeparator) {
-                                ForEach(MenuBarSeparator.allCases) { sep in
-                                    Text(sep.displayName).tag(sep)
+                        if settings.menuBarMode == .primaryPlusSecondary {
+                            HStack {
+                                Text("Separator:")
+                                    .font(.callout)
+                                Picker("", selection: $settings.menuBarSeparator) {
+                                    ForEach(MenuBarSeparator.allCases) { sep in
+                                        Text(sep.displayName).tag(sep)
+                                    }
                                 }
+                                .labelsHidden()
+                                .frame(maxWidth: 240)
                             }
-                            .labelsHidden()
-                            .frame(maxWidth: 240)
-                        }
 
-                        HStack {
-                            Text("Clock order:")
-                                .font(.callout)
-                            Picker("", selection: $settings.menuBarClockOrder) {
-                                ForEach(MenuBarClockOrder.allCases) { order in
-                                    Text(order.displayName).tag(order)
+                            HStack {
+                                Text("Clock order:")
+                                    .font(.callout)
+                                Picker("", selection: $settings.menuBarClockOrder) {
+                                    ForEach(MenuBarClockOrder.allCases) { order in
+                                        Text(order.displayName).tag(order)
+                                    }
                                 }
+                                .labelsHidden()
+                                .frame(maxWidth: 240)
                             }
-                            .labelsHidden()
-                            .frame(maxWidth: 240)
-                        }
 
-                        Toggle("Show local time zone label", isOn: $settings.showPrimaryLabel)
-                            .font(.callout)
+                            Toggle("Show local time zone label", isOn: $settings.showPrimaryLabel)
+                                .font(.callout)
+                        }
 
                         if settings.menuBarDateStyle != .hidden {
                             HStack {

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI // Array move/remove helpers used by the world-clock settings.
 
 final class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
