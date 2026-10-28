@@ -22,7 +22,40 @@
 
 ---
 
-## Install
+## Install this fork
+
+This fork adds **Settings → Menu Bar Display → Secondary time only**. Add a world
+clock and select it under **Secondary**. The menu bar shows its city code and time;
+if enabled, the date also uses that clock's timezone. With no world clocks, it falls
+back to local time. Separator, clock order, and local-label settings are retained
+and apply again when you switch back to **Local + secondary clock**.
+
+Build this fork on an Apple Silicon Mac with macOS 13+ and Command Line Tools:
+
+```bash
+git clone https://github.com/cjluce/MenuClock.git
+cd MenuClock
+./build.sh
+```
+
+Quit any running MenuClock, then copy `build/MenuClock.app` to `/Applications` and
+open it. This local build is ad-hoc signed, not notarized. The existing bundle ID
+is retained so your saved preferences continue to work. The upstream release
+below does not include this fork's new mode.
+
+Run the regression checks with `./test.sh` (Command Line Tools only).
+
+If your Command Line Tools select a macOS 27 SDK without the SwiftUI macro plugin,
+select a compatible installed SDK for both commands. For example, on the machine
+used to validate this change:
+
+```bash
+SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk ./test.sh
+SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk ./build.sh
+```
+
+
+## Upstream install
 
 1. **[Download the latest release](https://github.com/satsdisco/MenuClock/releases/latest)** (`MenuClock.app.zip`, ~3.5 MB)
 2. Unzip and drag `MenuClock.app` to `/Applications`
@@ -71,7 +104,7 @@
 
 ### Menu Bar
 
-- Show local time only, or local + a secondary world clock
+- Show local time only, local + a secondary world clock, or secondary time only
 - City codes auto-derived from labels: "New York" &rarr; NY, "Meridian" &rarr; MER
 - Choose your separator: `·` `•` `|` `—` `/` or just spacing
 - Live preview in Settings so you see exactly what the menu bar will look like

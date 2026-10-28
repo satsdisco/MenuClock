@@ -3,6 +3,7 @@ import Foundation
 enum MenuBarMode: String, Codable, CaseIterable, Identifiable {
     case primaryOnly
     case primaryPlusSecondary
+    case secondaryOnly
 
     var id: String { rawValue }
 
@@ -10,6 +11,7 @@ enum MenuBarMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .primaryOnly: return "Local time only"
         case .primaryPlusSecondary: return "Local + secondary clock"
+        case .secondaryOnly: return "Secondary time only"
         }
     }
 }
